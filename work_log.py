@@ -35,7 +35,7 @@ def clear():
     os.system('cls' if os.name == 'nt' else 'clear')
 
 
-def main():
+def main_menu(choice=None):
     """ Prints a menu choice and directs to corresponding function"""
     clear()
     print(dedent("""
@@ -56,7 +56,7 @@ def main():
     else:
         print("Please enter a, b or c.")
         time.sleep(3)
-        return main()
+        return main_menu()
 
 
 def add():
@@ -95,10 +95,11 @@ def add():
         else:
             break
     notes = input("Enter any notes (optional): ")
-    Entry.create(employee=employee, date=date, task=task, duration=duration, notes=notes)
+    Entry.create(employee=employee, date=date, task=task, duration=duration,
+    notes=notes)
     print("Saved successfully!")
     time.sleep(2)
-    return main()
+    return main_menu()
 
 
 def search():
@@ -123,7 +124,7 @@ def search():
     elif choice == "d":
         return search_exact()
     elif choice == "e":
-        return main()
+        return main_menu()
     else:
         print("Please enter a valid choice")
         time.sleep(3)
@@ -217,7 +218,12 @@ def search_employee_name():
             employee_list.append(entry.employee)
         else:
             pass
-    return search_employee_list(employee_list)
+    if entries:
+        return search_employee_list(employee_list)
+    else:
+        print("No results found.")
+        time.sleep(2)
+        return search()
 
 
 def search_employee_list(employee_list=None):
@@ -250,6 +256,7 @@ def search_employee_list(employee_list=None):
             else:
                 break
         employee = employee_list[choice]
+        return employee_list
         entries = Entry.select()
         entries = entries.where(Entry.employee == employee)
     if entries:
@@ -383,7 +390,7 @@ def delete(entry):
     entry.delete_instance()
     print("Entry deleted!")
     time.sleep(2)
-    return main()
+    return main_menu()
 
 def edit(entry):
     """ Prompts user what part of the entry to edit, edits database """
@@ -441,4 +448,4 @@ def edit(entry):
 
 if __name__ == '__main__':
     initialize()
-    main()
+    main_menu()
