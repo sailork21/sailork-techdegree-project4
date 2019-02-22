@@ -87,15 +87,27 @@ def get_duration(error=None):
             return duration
 
 
-def add():
-    """ Calls functions for a new entry and passes to Entry class"""
+def entry_data():
+    """ Calls functions for a new entry"""
     date = get_date()
     employee = get_employee()
     task = get_task()
     duration = get_duration()
     notes = input("Enter any notes (optional): ")
-    entry = Entry.create(date=date, employee=employee, task=task,
-                        duration=duration, notes=notes)
+
+    entry = {
+        'employee': employee,
+        'date': date,
+        'task': task,
+        'duration': duration,
+        'notes': notes,
+    }
+    create_entry(entry)
+
+
+def create_entry(entry):
+    """ Creates entry in database"""
+    Entry.create(**entry)
     print("Saved successfully!")
     time.sleep(2)
     return entry

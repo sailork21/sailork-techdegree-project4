@@ -29,7 +29,7 @@ def main_menu(choice=None):
         choice = input("> ")
 
         if choice == "a":
-            work_log.add()
+            work_log.entry_data()
         elif choice == "b":
             search()
         elif choice == "c":
