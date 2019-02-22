@@ -8,6 +8,8 @@ import time
 from textwrap import dedent
 from peewee import *
 
+import menus
+
 
 db = SqliteDatabase('work_log.db')
 
@@ -35,100 +37,68 @@ def clear():
     os.system('cls' if os.name == 'nt' else 'clear')
 
 
-def main_menu(choice=None):
-    """ Prints a menu choice and directs to corresponding function"""
-    clear()
-    print(dedent("""
-        WORK log
-        What would you like to do? Enter a, b or c.
-        a) Add new entry
-        b) Search in existing entries
-        c) Quit program"""))
-    choice = input("> ")
+def get_date(error=None):
+    """ Prompts user for date and returns"""
+    while True:
+        if error:
+            print(error)
+        date = input(str("Enter date, use DD/MM/YYYY: "))
+        try:
+            date_test = datetime.datetime.strptime(date, '%d/%m/%Y')
+        except ValueError:
+            error = "Must be in correct DD/MM/YYYY format."
+        else:
+            return date
 
-    if choice == "a":
-        return add()
-    elif choice == "b":
-        return search()
-    elif choice == "c":
-        print("Thanks for using WORK LOG!")
-        sys.exit()
-    else:
-        print("Please enter a, b or c.")
-        time.sleep(3)
-        return main_menu()
+
+def get_employee(error=None):
+    """ Prompts user for employee and returns"""
+    while True:
+        if error:
+            print(error)
+        employee = input("Enter the employee name: ")
+        if employee == "":
+            error = "Please enter a valid string."
+        else:
+            return employee
+
+
+def get_task(error=None):
+    """ Prompts user for task and returns"""
+    while True:
+        if error:
+            print(error)
+        task = input("Enter the task name: ")
+        if task == "":
+            error = "Please enter a valid string."
+        else:
+            return task
+
+
+def get_duration(error=None):
+    """ Prompts user for duration and returns"""
+    while True:
+        if error:
+            print(error)
+        duration = input("Enter the duration of the task in minutes: ")
+        if not duration.isdigit():
+            error = "Please enter a valid integer"
+        else:
+            return duration
 
 
 def add():
-    """ Takes input for new entry and passes to Entry class"""
-    try:
-        date = input(str("Enter date of the task, use DD/MM/YYYY: "))
-        date_test = datetime.datetime.strptime(date, '%d/%m/%Y')
-    except:
-        print("Must be in correct DD/MM/YYYY format.")
-        return add()
-    while True:
-        employee = input("Enter the employee name: ")
-        try:
-            if employee == "":
-                raise ValueError("Please enter a valid string.")
-        except ValueError as err:
-                print(f"Whoops! {err}")
-        else:
-            break
-    while True:
-        task = input("Enter the name of this task: ")
-        try:
-            if task == "":
-                raise ValueError("Please enter a valid string.")
-        except ValueError as err:
-                print(f"Whoops! {err}")
-        else:
-            break
-    while True:
-        duration = input("Enter the duration of this task in minutes: ")
-        try:
-            if not duration.isdigit():
-                raise ValueError("Please enter a valid integer.")
-        except ValueError as err:
-                print(f"Whoops! {err}")
-        else:
-            break
+    """ Calls functions for a new entry and passes to Entry class"""
+    date = get_date()
+    employee = get_employee()
+    task = get_task()
+    duration = get_duration()
     notes = input("Enter any notes (optional): ")
-    Entry.create(employee=employee, date=date, task=task, duration=duration,
-    notes=notes)
+    entry = Entry.create(date=date, employee=employee, task=task,
+                        duration=duration, notes=notes)
     print("Saved successfully!")
     time.sleep(2)
-    return main_menu()
-
-
-def search():
-    """ Presents user with search menu and directs to corresponding function"""
-    clear()
-    print(dedent("""
-        What do you want to search by? Enter a through e.
-        a) Employee
-        b) Date
-        c) Time Spent
-        d) Search Term
-        e) Return to main menu
-        """))
-    choice = input("> ")
-
-    if choice == "a":
-        return search_employee()
-    elif choice == "b":
-        return search_date()
-    elif choice == "c":
-        return search_duration()
-    elif choice == "d":
-        return search_exact()
-    elif choice == "e":
-        return main_menu()
-    else:
-        print("Please enter a valid choice")
-        time.sleep(3)
-        return search()
+    return entry
 
 
 def view_entries(entries):
@@ -174,37 +144,14 @@ def view_entries(entries):
         elif choice == "n" and entry_count+1 != num_entries:
             entry_count += 1
         elif choice == "e":
-            return edit(entry)
+            edit(entry)
         elif choice == "d":
-            return delete(entry)
+            delete(entry)
         elif choice == "r":
-            return search()
+            break
         else:
             print("Please enter a valid choice.")
             time.sleep(3)
-            return view_entries(entries)
-
-
-def search_employee():
-    """ Presents user with choice to search by name or see a list"""
-    clear()
-    print(dedent("""
-        What do you want to do? Enter a or b.
-        a) Input a name to search
-        b) See a list of employees
-        c) Return to search menu
-        """))
-    choice = input("> ")
-    if choice == "a":
-        return search_employee_name()
-    elif choice == "b":
-        return search_employee_list()
-    elif choice == "c":
-        return search()
-    else:
-        print("Please enter a valid choice")
-        time.sleep(3)
-        return search()
 
 
 def search_employee_name():
@@ -213,17 +160,16 @@ def search_employee_name():
     entries = Entry.select()
     entries = entries.where(Entry.employee.contains(employee))
     employee_list = []
-    for entry in entries:
-        if entry.employee not in employee_list:
-            employee_list.append(entry.employee)
-        else:
-            pass
     if entries:
-        return search_employee_list(employee_list)
+        for entry in entries:
+            if entry.employee not in employee_list:
+                employee_list.append(entry.employee)
+            else:
+                pass
+        search_employee_list(employee_list)
     else:
         print("No results found.")
         time.sleep(2)
-        return search()
 
 
 def search_employee_list(employee_list=None):
@@ -256,37 +202,18 @@ def search_employee_list(employee_list=None):
             else:
                 break
         employee = employee_list[choice]
-        return employee_list
         entries = Entry.select()
         entries = entries.where(Entry.employee == employee)
-    if entries:
-        return view_entries(entries)
+        view_entries(entries)
+    elif len(employee_list) == 1:
+        employee = employee_list[0]
+        entries = Entry.select()
+        entries = entries.where(Entry.employee == employee)
+        view_entries(entries)
     else:
         print("No results found.")
         time.sleep(2)
-        return search()
 
-
-def search_date():
-    """ Presents user with choice to search by list of dates or range"""
-    clear()
-    print(dedent("""
-        What do you want to do? Enter a or b.
-        a) Choose from a list of dates
-        b) Search by a date range
-        c) Return to search menu
-        """))
-    choice = input("> ")
-    if choice == "a":
-        return search_date_list()
-    elif choice == "b":
-        return search_date_range()
-    elif choice == "c":
-        return search()
-    else:
-        print("Please enter a valid choice")
-        time.sleep(3)
-        return search()
 
 def search_date_list():
     """ Gives list of dates to search by """
@@ -319,55 +246,39 @@ def search_date_list():
         entries = Entry.select()
         entries = entries.where(Entry.date == date)
     if entries:
-        return view_entries(entries)
+        view_entries(entries)
     else:
         print("No results found.")
         time.sleep(2)
-        return search()
 
 
 def search_date_range():
     """ Searches for entries given date range."""
-    start_date = input("Enter beginning date to search (DD/MM/YYYY): ")
-    end_date = input("Enter end date to search (DD/MM/YYYY): ")
-    try:
-        start_date_test = datetime.datetime.strptime(start_date, '%d/%m/%Y')
-        end_date_test = datetime.datetime.strptime(end_date, '%d/%m/%Y')
-    except:
-        print("Must be in correct DD/MM/YYYY format.")
-        return search_date_range()
-
+    print("Beginning date:")
+    start_date = get_date()
+    print("End date:")
+    end_date = get_date()
     entries = Entry.select()
     entries = entries.where(
             (Entry.date >= start_date) &
             (Entry.date <= end_date))
     if entries:
-        return view_entries(entries)
+        view_entries(entries)
     else:
         print("No results found.")
         time.sleep(2)
-        return search()
 
 
 def search_duration():
     """ Searches for entries given duration. Returns a list of results """
-    while True:
-        duration = input("Time Spent: ")
-        try:
-            if not duration.isdigit():
-                raise ValueError("Please enter a valid integer.")
-        except ValueError as err:
-                print(f"Whoops! {err}")
-        else:
-            break
+    duration = get_duration()
     entries = Entry.select()
     entries = entries.where(Entry.duration == duration)
     if entries:
-        return view_entries(entries)
+        view_entries(entries)
     else:
         print("No results found.")
         time.sleep(2)
-        return search()
 
 
 def search_exact():
@@ -378,11 +289,10 @@ def search_exact():
             (Entry.task.contains(exact_string)) |
             (Entry.notes.contains(exact_string)))
     if entries:
-        return view_entries(entries)
+        view_entries(entries)
     else:
         print("No results found.")
         time.sleep(2)
-        return search()
 
 
 def delete(entry):
@@ -390,7 +300,7 @@ def delete(entry):
     entry.delete_instance()
     print("Entry deleted!")
     time.sleep(2)
-    return main_menu()
+
 
 def edit(entry):
     """ Prompts user what part of the entry to edit, edits database """
@@ -398,54 +308,35 @@ def edit(entry):
     Which field would you like to edit?
     (D)ate, (E)mployee, (T)ask, D(u)ration, (N)otes
     """))
-    choice = input("> ").upper()
-    if choice == "D":
-        while True:
-            edit_val = input("Enter new value: ")
-            try:
-                edit_val = datetime.datetime.strptime(edit_val,
-                '%d/%m/%Y')
-                edit_val = edit_val.strftime("%d/%m/%Y")
-            except:
-                print("Must be in correct DD/MM/YYYY format.")
-            else:
-                break
-        entry.date = edit_val
-        entry.save()
-    elif choice == "E":
-        edit_val = input("Enter new value: ")
-        entry.employee = edit_val
-        entry.save()
-    elif choice == "T":
-        edit_val = input("Enter new value: ")
-        entry.task = edit_val
-        entry.save()
-    elif choice == "U":
-        while True:
-            edit_val = input("Enter new value: ")
-            try:
-                if not edit_val.isdigit():
-                    raise ValueError(
-                    "Please enter a valid integer.")
-            except ValueError as err:
-                    print(f"Whoops! {err}")
-            else:
-                break
-        entry.duration = edit_val
-        entry.save()
-    elif choice == "N":
-        edit_val = input("Enter new value: ")
-        entry.notes = edit_val
-        entry.save()
-    else:
-        print("Please enter a valid choice.")
-        time.sleep(1)
-        return edit(entry)
+    while True:
+        choice = input("> ").upper()
+        if choice == "D":
+            edit_val = get_date()
+            entry.date = edit_val
+            entry.save()
+            break
+        elif choice == "E":
+            edit_val = get_employee()
+            entry.employee = edit_val
+            entry.save()
+            break
+        elif choice == "T":
+            edit_val = get_task()
+            entry.task = edit_val
+            entry.save()
+            break
+        elif choice == "U":
+            edit_val = get_duration()
+            entry.duration = edit_val
+            entry.save()
+            break
+        elif choice == "N":
+            edit_val = input("Enter new notes: ")
+            entry.notes = edit_val
+            entry.save()
+            break
+        else:
+            print("Please enter a valid choice.")
+            time.sleep(1)
     print("Entry updated!")
     time.sleep(2)
-    return search()
-
-
-if __name__ == '__main__':
-    initialize()
-    main_menu()
