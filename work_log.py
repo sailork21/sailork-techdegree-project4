@@ -32,12 +32,6 @@ def initialize():
     db.create_tables([Entry], safe=True)
 
 
-def clear():
-    """ Clears screen"""
-    os.system('cls' if os.name == 'nt' else 'clear')
-    return None
-
-
 def no_results():
     print("No results found.")
     time.sleep(2)
@@ -166,7 +160,7 @@ def view_entries(entries):
 
 
 def print_entry(entries, entry_count, num_entries):
-    clear()
+    menus.clear()
     print(f"Date: {entries[entry_count].date}")
     print(f"Employee: {entries[entry_count].employee}")
     print(f"Task: {entries[entry_count].task}")
@@ -197,109 +191,39 @@ def search_employee_name():
         no_results()
 
 
-# def choose_list(list):
-#     """ Prompts user to choose date or employee from list"""
-#     while True:
-#         choice = input("> ")
-#         try:
-#             if not choice.isdigit():
-#                 raise ValueError("Please enter a valid integer.")
-#             choice = int(choice)
-#             if choice > (len(list) - 1):
-#                 raise ValueError("Please enter a valid integer.")
-#             elif choice < 0:
-#                 raise ValueError("Please enter a valid integer.")
-#         except ValueError as err:
-#                 print(f"Whoops! {err}")
-#         else:
-#             break
-#     return choice
-
-
-def search_employee_list(employee_list=None):
-    """ Returns list of employees"""
-    if employee_list == None:
-        entries = Entry.select()
-        employee_list = []
-        for entry in entries:
-            if entry.employee not in employee_list:
-                employee_list.append(entry.employee)
-            else:
-                pass
-    if len(employee_list) > 1:
-        print("Multiple employees found, choose one by number:")
-        for person in employee_list:
-            print(f"{employee_list.index(person)}) {person}")
-        choose_list(employee_list)
-        employee = employee_list[choice]
-        entries = Entry.select()
-        entries = entries.where(Entry.employee == employee)
-        view_entries(entries)
-    elif len(employee_list) == 1:
-        employee = employee_list[0]
-        entries = Entry.select()
-        entries = entries.where(Entry.employee == employee)
-        view_entries(entries)
-    else:
-        no_results()
-
-
-def search_date_list():
-    """ Gives list of dates to search by """
+def multiple_matches(type=None):
     entries = Entry.select()
-    date_list = []
+    type_list = []
     for entry in entries:
-        if entry.date not in date_list:
-            date_list.append(entry.date)
+        if getattr(entry,type) not in type_list:
+            type_list.append(getattr(entry,type))
         else:
             pass
-    if len(date_list) > 1:
-        print("Multiple dates found, choose one by number:")
-        for date in date_list:
-            print(f"{date_list.index(date)}) {date}")
-        choose_list(date_list)
-        date = date_list[choice]
+    if len(type_list) > 1:
+        print("Multiple items found, choose one by number:")
+        for item in type_list:
+            print(f"{type_list.index(item)}) {item}")
+        while True:
+            choice = input("> ")
+            try:
+                if not choice.isdigit():
+                    raise ValueError("Please enter a valid integer.")
+                choice = int(choice)
+                if choice > (len(type_list) - 1):
+                    raise ValueError("Please enter a valid integer.")
+                elif choice < 0:
+                    raise ValueError("Please enter a valid integer.")
+            except ValueError as err:
+                    print(f"Whoops! {err}")
+            else:
+                break
+        type_t = type_list[choice]
         entries = Entry.select()
-        entries = entries.where(Entry.date == date)
+        entries = entries.where(getattr(Entry,type) == type_t)
     if entries:
         view_entries(entries)
     else:
         no_results()
-
-# def multiple_matches(type=None):
-#     entries = Entry.select()
-#     type_list = []
-#     for entry in entries:
-#         import pdb; pdb.set_trace()
-#         if entry.['type'] not in type_list:
-#             type_list.append(entry.type)
-#         else:
-#             pass
-#     if len(type_list) > 1:
-#         print("Multiple items found, choose one by number:")
-#         for type in type_list:
-#             print(f"{type_list.index(type)}) {type}")
-#         while True:
-#             choice = input("> ")
-#             try:
-#                 if not choice.isdigit():
-#                     raise ValueError("Please enter a valid integer.")
-#                 choice = int(choice)
-#                 if choice > (len(list) - 1):
-#                     raise ValueError("Please enter a valid integer.")
-#                 elif choice < 0:
-#                     raise ValueError("Please enter a valid integer.")
-#             except ValueError as err:
-#                     print(f"Whoops! {err}")
-#             else:
-#                 break
-#         type = type_list[choice]
-#         entries = Entry.select()
-#         entries = entries.where(Entry.type == type)
-#     if entries:
-#         view_entries(entries)
-#     else:
-#         no_results()
 
 
 def search_date_range():
