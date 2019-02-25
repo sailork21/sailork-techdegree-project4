@@ -35,6 +35,13 @@ def initialize():
 def clear():
     """ Clears screen"""
     os.system('cls' if os.name == 'nt' else 'clear')
+    return None
+
+
+def no_results():
+    print("No results found.")
+    time.sleep(2)
+    return None
 
 
 def get_date(error=None):
@@ -119,15 +126,7 @@ def view_entries(entries):
     choice = None
     entry_count = 0
     while choice != "e" and choice != "d" and choice != "r":
-        clear()
-        print(f"Date: {entries[entry_count].date}")
-        print(f"Employee: {entries[entry_count].employee}")
-        print(f"Task: {entries[entry_count].task}")
-        print(f"Duration: {entries[entry_count].duration}")
-        print(f"Notes: {entries[entry_count].notes}")
-        print("\n"+f"Entry {entry_count+1} of {num_entries} ")
-        print("\n")
-
+        print_entry(entries, entry_count, num_entries)
         if num_entries == 1:
             print(dedent("""
             Please make a selection:
@@ -166,9 +165,24 @@ def view_entries(entries):
             time.sleep(3)
 
 
+def print_entry(entries, entry_count, num_entries):
+    clear()
+    print(f"Date: {entries[entry_count].date}")
+    print(f"Employee: {entries[entry_count].employee}")
+    print(f"Task: {entries[entry_count].task}")
+    print(f"Duration: {entries[entry_count].duration}")
+    print(f"Notes: {entries[entry_count].notes}")
+    print("\n"+f"Entry {entry_count+1} of {num_entries} ")
+    print("\n")
+    return entries
+    return entry_count
+    return num_entries
+
+
+
 def search_employee_name():
     """Search entries by employee name"""
-    employee = input("Employee: ")
+    employee = get_employee()
     entries = Entry.select()
     entries = entries.where(Entry.employee.contains(employee))
     employee_list = []
@@ -180,8 +194,26 @@ def search_employee_name():
                 pass
         search_employee_list(employee_list)
     else:
-        print("No results found.")
-        time.sleep(2)
+        no_results()
+
+
+# def choose_list(list):
+#     """ Prompts user to choose date or employee from list"""
+#     while True:
+#         choice = input("> ")
+#         try:
+#             if not choice.isdigit():
+#                 raise ValueError("Please enter a valid integer.")
+#             choice = int(choice)
+#             if choice > (len(list) - 1):
+#                 raise ValueError("Please enter a valid integer.")
+#             elif choice < 0:
+#                 raise ValueError("Please enter a valid integer.")
+#         except ValueError as err:
+#                 print(f"Whoops! {err}")
+#         else:
+#             break
+#     return choice
 
 
 def search_employee_list(employee_list=None):
@@ -198,21 +230,7 @@ def search_employee_list(employee_list=None):
         print("Multiple employees found, choose one by number:")
         for person in employee_list:
             print(f"{employee_list.index(person)}) {person}")
-
-        while True:
-            choice = input("> ")
-            try:
-                if not choice.isdigit():
-                    raise ValueError("Please enter a valid integer.")
-                choice = int(choice)
-                if choice > (len(employee_list) - 1):
-                    raise ValueError("Please enter a valid integer.")
-                elif choice < 0:
-                    raise ValueError("Please enter a valid integer.")
-            except ValueError as err:
-                    print(f"Whoops! {err}")
-            else:
-                break
+        choose_list(employee_list)
         employee = employee_list[choice]
         entries = Entry.select()
         entries = entries.where(Entry.employee == employee)
@@ -223,8 +241,7 @@ def search_employee_list(employee_list=None):
         entries = entries.where(Entry.employee == employee)
         view_entries(entries)
     else:
-        print("No results found.")
-        time.sleep(2)
+        no_results()
 
 
 def search_date_list():
@@ -240,28 +257,49 @@ def search_date_list():
         print("Multiple dates found, choose one by number:")
         for date in date_list:
             print(f"{date_list.index(date)}) {date}")
-        while True:
-            choice = input("> ")
-            try:
-                if not choice.isdigit():
-                    raise ValueError("Please enter a valid integer.")
-                choice = int(choice)
-                if choice > (len(date_list) - 1):
-                    raise ValueError("Please enter a valid integer.")
-                elif choice < 0:
-                    raise ValueError("Please enter a valid integer.")
-            except ValueError as err:
-                    print(f"Whoops! {err}")
-            else:
-                break
+        choose_list(date_list)
         date = date_list[choice]
         entries = Entry.select()
         entries = entries.where(Entry.date == date)
     if entries:
         view_entries(entries)
     else:
-        print("No results found.")
-        time.sleep(2)
+        no_results()
+
+# def multiple_matches(type=None):
+#     entries = Entry.select()
+#     type_list = []
+#     for entry in entries:
+#         import pdb; pdb.set_trace()
+#         if entry.['type'] not in type_list:
+#             type_list.append(entry.type)
+#         else:
+#             pass
+#     if len(type_list) > 1:
+#         print("Multiple items found, choose one by number:")
+#         for type in type_list:
+#             print(f"{type_list.index(type)}) {type}")
+#         while True:
+#             choice = input("> ")
+#             try:
+#                 if not choice.isdigit():
+#                     raise ValueError("Please enter a valid integer.")
+#                 choice = int(choice)
+#                 if choice > (len(list) - 1):
+#                     raise ValueError("Please enter a valid integer.")
+#                 elif choice < 0:
+#                     raise ValueError("Please enter a valid integer.")
+#             except ValueError as err:
+#                     print(f"Whoops! {err}")
+#             else:
+#                 break
+#         type = type_list[choice]
+#         entries = Entry.select()
+#         entries = entries.where(Entry.type == type)
+#     if entries:
+#         view_entries(entries)
+#     else:
+#         no_results()
 
 
 def search_date_range():
@@ -277,8 +315,7 @@ def search_date_range():
     if entries:
         view_entries(entries)
     else:
-        print("No results found.")
-        time.sleep(2)
+        no_results()
 
 
 def search_duration():
@@ -289,8 +326,7 @@ def search_duration():
     if entries:
         view_entries(entries)
     else:
-        print("No results found.")
-        time.sleep(2)
+        no_results()
 
 
 def search_exact():
@@ -303,8 +339,7 @@ def search_exact():
     if entries:
         view_entries(entries)
     else:
-        print("No results found.")
-        time.sleep(2)
+        no_results()
 
 
 def delete(entry):
@@ -312,6 +347,7 @@ def delete(entry):
     entry.delete_instance()
     print("Entry deleted!")
     time.sleep(2)
+    return None
 
 
 def edit(entry):

@@ -83,7 +83,7 @@ def search_employee():
         if choice == "a":
             work_log.search_employee_name()
         elif choice == "b":
-            work_log.search_employee_list()
+            work_log.multiple_matches(type='employee')
         elif choice == "c":
             break
         else:
@@ -103,7 +103,7 @@ def search_date():
             """))
         choice = input("> ")
         if choice == "a":
-            work_log.search_date_list()
+            work_log.multiple_matches(type='date')
         elif choice == "b":
             work_log.search_date_range()
         elif choice == "c":
