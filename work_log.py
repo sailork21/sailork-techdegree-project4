@@ -49,7 +49,7 @@ def get_date(error=None):
         except ValueError:
             error = "Must be in correct DD/MM/YYYY format."
         else:
-            return date
+            return date_test
 
 
 def get_employee(error=None):
@@ -153,6 +153,7 @@ def view_entries(entries):
         elif choice == "d":
             delete(entry)
         elif choice == "r":
+            return None
             break
         else:
             print("Please enter a valid choice.")
@@ -169,8 +170,6 @@ def print_entry(entries, entry_count, num_entries):
     print("\n"+f"Entry {entry_count+1} of {num_entries} ")
     print("\n")
     return entries
-    return entry_count
-    return num_entries
 
 
 
@@ -179,16 +178,12 @@ def search_employee_name():
     employee = get_employee()
     entries = Entry.select()
     entries = entries.where(Entry.employee.contains(employee))
-    employee_list = []
     if entries:
-        for entry in entries:
-            if entry.employee not in employee_list:
-                employee_list.append(entry.employee)
-            else:
-                pass
-        search_employee_list(employee_list)
+        view_entries(entries)
     else:
         no_results()
+        return None
+
 
 
 def multiple_matches(type=None):
@@ -240,6 +235,7 @@ def search_date_range():
         view_entries(entries)
     else:
         no_results()
+        return None
 
 
 def search_duration():
@@ -251,6 +247,18 @@ def search_duration():
         view_entries(entries)
     else:
         no_results()
+        return None
+
+def search_duration2():
+    """ Searches for entries given duration. Returns a list of results """
+    duration = get_duration()
+    entries = Entry.select()
+    entries = entries.where(Entry.duration == duration)
+    if entries:
+        view_entries(entries)
+    else:
+        no_results()
+        return None
 
 
 def search_exact():
@@ -264,6 +272,7 @@ def search_exact():
         view_entries(entries)
     else:
         no_results()
+        return None
 
 
 def delete(entry):
@@ -312,3 +321,4 @@ def edit(entry):
             time.sleep(1)
     print("Entry updated!")
     time.sleep(2)
+    return None
