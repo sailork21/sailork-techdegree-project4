@@ -34,6 +34,7 @@ def main_menu(choice=None):
             search()
         elif choice == "c":
             print("Thanks for using WORK LOG!")
+            return None
             sys.exit()
         else:
             print("Please enter a, b or c.")

@@ -155,5 +155,12 @@ class GetTests(unittest.TestCase):
         assert result == None
 
 
+    def test_main_menu(self):
+        to_pass_in = ['c']
+        with patch('builtins.input', side_effect=to_pass_in) as mock:
+            result = menus.main_menu()
+        assert result == None
+
+
 if __name__ == '__main__':
     unittest.main()
